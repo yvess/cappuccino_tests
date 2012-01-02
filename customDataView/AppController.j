@@ -8,7 +8,7 @@
 
 @import <Foundation/CPObject.j>
 
-
+var numberOfRootItems = 4; // set this to the number of parent items
 
 /* ** Parent */
 @implementation Parent : CPObject
@@ -30,7 +30,7 @@
 
 - (CPString)objectValueForOutlineColumn:(CPString)aTableColumn
 {
-    return [self label];
+    return [CPString stringWithFormat:@"%@: %@", @"parent", [self label]];
 }
 @end
 
@@ -68,7 +68,7 @@
 }
 - (CPString)objectValueForOutlineColumn:(CPString)aTableColumn
 {
-    return [self name];
+    return [CPString stringWithFormat:@"%@: %@", @"child", [self name]];
 }
 @end
 
@@ -98,7 +98,7 @@
 
 - (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item
 {
-    var count = 2; // for root îtem
+    var count = numberOfRootItems; // for root îtem
     if (item != nil)
     {
         if ([item respondsToSelector:CPSelectorFromString(@"childs")])
@@ -108,6 +108,7 @@
             count = 0;
         }
     }
+    console.log("numberOfChildrenOfItem", count);
     return count;
 }
 
@@ -136,13 +137,14 @@
 - (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item
 {
     var numberOfChilds = [self outlineView:outlineView numberOfChildrenOfItem:item];
-    if (numberOfChilds == 0)
+    /*if (numberOfChilds == 0)
     {
         var rows = [outlineView rowsInRect:[outlineView visibleRect]];
-    }
+    }*/
     return [self outlineView:outlineView numberOfChildrenOfItem:item] > 0;
 }
 
+/*
 - (CPView)outlineView:(CPOutlineView)aOutlineView dataViewForTableColumn:(CPTableColumn)aTableColumn item:(id)anItem
 {
     var dataView = nil;
@@ -152,8 +154,16 @@
     } else {
         dataView = nil;
     }
-    console.log("dataview", dataView);
     return dataView;
+}*/
+
+- (void)outlineView:(CPOutlineView)outlineView willDisplayView:(id)dataView forTableColumn:(CPTableColumn)tableColumn item:(id)item
+{
+    if ([item isKindOfClass:[Child class]])
+    {
+        CPLog.debug(dataView);CPLog.debug(@"set to red");
+        [dataView setTextColor:[CPColor colorWithHexString:@"FF0000"]];
+    }
 }
 
 @end
@@ -182,19 +192,29 @@
     var child1 = [[Child alloc] initWithName:@"Michael" editView:editView],
         child2 = [[Child alloc] initWithName:@"Daniel" editView:editView],
         child3 = [[Child alloc] initWithName:@"Jane" editView:editView],
-        child4 = [[Child alloc] initWithName:@"Greta" editView:editView];
+        child4 = [[Child alloc] initWithName:@"Greta" editView:editView],
+        child5 = [[Child alloc] initWithName:@"Ethan" editView:editView],
+        child6 = [[Child alloc] initWithName:@"Liam" editView:editView],
+        child7 = [[Child alloc] initWithName:@"Eli" editView:editView];
 
     var parent1 = [[Parent alloc] initWithLabel:@"Peter"],
-        parent2 = [[Parent alloc] initWithLabel:@"Maria"];
+        parent2 = [[Parent alloc] initWithLabel:@"Alexander"],
+        parent3 = [[Parent alloc] initWithLabel:@"Maria"];
+        parent4 = [[Parent alloc] initWithLabel:@"Molly"];
 
     [[parent1 childs] addObject:child1];
     [[parent1 childs] addObject:child2];
     [[parent2 childs] addObject:child3];
     [[parent2 childs] addObject:child4];
+    [[parent3 childs] addObject:child5];
+    [[parent4 childs] addObject:child6];
+    //[[parent4 childs] addObject:child7];
 
     var group = [[CPMutableArray alloc] init];
     [group addObject:parent1];
     [group addObject:parent2];
+    [group addObject:parent3];
+    [group addObject:parent4];
     groupOutlineController = [[GroupOutlineController alloc] initWithGroup:group outline:namesOutline];
 
     [namesOutline setDataSource:groupOutlineController];
